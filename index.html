@@ -77,7 +77,10 @@ a{color:inherit}
 @keyframes spin{50%{transform:scaleX(.25)}}
 
 /* ---------- Hero ---------- */
-.hero{position:relative;overflow:hidden;border-bottom:4px solid var(--ink);
+[hidden]{display:none!important}
+.screen{animation:screenIn .4s steps(5) both}
+@keyframes screenIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.hero{position:relative;overflow:hidden;border-bottom:4px solid var(--ink);min-height:calc(100vh - 68px);min-height:calc(100svh - 68px);display:flex;flex-direction:column;justify-content:center;
   background:
     linear-gradient(180deg,#8fd3ff 0%,#b9e6ff 38%,#ffe7b3 72%,#ffd29a 100%);
 }
@@ -169,7 +172,17 @@ a{color:inherit}
 @keyframes hop{50%{transform:translateY(-4px)}}
 
 /* ---------- Catalog ---------- */
-.catalog{padding:56px 0 40px}
+.catalog{padding:40px 0 40px}
+.btn-back{background:var(--paper-2);color:var(--ink);font-size:13px;padding:11px 14px}
+.btn-back .tri{transform:scaleX(-1)}
+.level-select-top{background:linear-gradient(180deg,#8fd3ff,#ffe7b3);border-bottom:4px solid var(--ink);position:relative;overflow:hidden}
+.level-select-top .wrap{position:relative;z-index:2;padding:22px 0 64px}
+.level-select-top .ground{height:40px}
+.level-select-top .ground::after{inset:24px 0 0 0}
+.level-select-top h2{font-family:var(--font-pixel);font-weight:900;font-size:clamp(26px,4.4vw,44px);line-height:1.05;margin:14px 0 6px;color:var(--white);text-shadow:3px 0 0 var(--ink),-3px 0 0 var(--ink),0 3px 0 var(--ink),0 -3px 0 var(--ink),3px 3px 0 var(--ink),-3px 3px 0 var(--ink),3px -3px 0 var(--ink),-3px -3px 0 var(--ink),6px 7px 0 var(--blue)}
+.level-select-top h2:focus{outline:none}
+.level-select-top p{margin:0;font-weight:800;background:rgba(255,253,247,.86);display:inline-block;padding:6px 10px}
+.level-select-top .walker{bottom:26px}
 .section-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
 .section-head h2{font-family:var(--font-pixel);font-weight:900;font-size:clamp(24px,3.4vw,36px);margin:6px 0 0;line-height:1.1}
 .eyebrow{font-family:var(--font-pixel);font-weight:900;font-size:12px;letter-spacing:.18em;color:var(--red);text-transform:uppercase}
@@ -310,7 +323,7 @@ footer small{display:block;color:#bcae95;font-weight:700;margin-top:4px}
 </header>
 
 <main>
-  <section class="hero" aria-labelledby="hero-title">
+  <section class="hero screen" id="mulai" aria-labelledby="hero-title">
     <span class="cloud c1" aria-hidden="true"></span>
     <span class="cloud c2" aria-hidden="true"></span>
     <span class="cloud c3" aria-hidden="true"></span>
@@ -326,8 +339,8 @@ footer small{display:block;color:#bcae95;font-weight:700;margin-top:4px}
           <li class="badge">Interaktif</li>
         </ul>
         <div class="hero-cta">
-          <a class="btn" href="#katalog"><span class="tri" aria-hidden="true"></span>Pilih Level</a>
-          <span class="hint">Tekan <kbd>/</kbd> untuk mencari paket</span>
+          <a class="btn" href="#katalog" id="startBtn"><span class="tri" aria-hidden="true"></span>Pilih Level</a>
+          <span class="hint">atau tekan <kbd>Enter</kbd></span>
         </div>
       </div>
       <div class="stage" aria-hidden="true">
@@ -345,15 +358,19 @@ footer small{display:block;color:#bcae95;font-weight:700;margin-top:4px}
     <span class="walker w2" data-cat="lilac" aria-hidden="true"></span>
   </section>
 
-  <section class="catalog" id="katalog" aria-labelledby="catalog-title">
+  <div class="screen" id="katalog" hidden>
+  <section class="level-select-top" aria-labelledby="catalog-title">
     <div class="wrap">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">World Map · Katalog</span>
-          <h2 id="catalog-title">Pilih Level Latihanmu</h2>
-          <p>Setiap paket berisi 30 soal interaktif lengkap dengan pembahasan.</p>
-        </div>
-      </div>
+      <a class="btn btn-back" href="#" id="backBtn"><span class="tri" aria-hidden="true"></span>Menu Awal</a>
+      <h2 id="catalog-title" tabindex="-1">Pilih Level Latihanmu</h2>
+      <p>Setiap paket berisi 30 soal interaktif lengkap dengan pembahasan.</p>
+    </div>
+    <div class="ground" aria-hidden="true"></div>
+    <span class="walker" data-cat="mint" aria-hidden="true"></span>
+  </section>
+
+  <section class="catalog" aria-label="Katalog paket">
+    <div class="wrap">
 
       <div class="console px-frame" role="search">
         <div class="console-row">
@@ -401,6 +418,7 @@ footer small{display:block;color:#bcae95;font-weight:700;margin-top:4px}
       </ol>
     </div>
   </section>
+  </div>
 </main>
 
 <footer>
@@ -651,9 +669,33 @@ document.getElementById("clearSearch").addEventListener("click", () => { searchI
 document.getElementById("resetBtn").addEventListener("click", () => { searchInput.value = ""; setFilter("all"); searchInput.focus(); });
 document.addEventListener("keydown", e => {
   const typing = /input|textarea|select/i.test(document.activeElement.tagName);
-  if (e.key === "/" && !typing) { e.preventDefault(); searchInput.focus(); searchInput.scrollIntoView({ block: "center" }); }
+  if (e.key === "/" && !typing) { e.preventDefault(); openCatalog(true); }
+  if (e.key === "Enter" && !startScreen.hidden && !typing && !/^(a|button)$/i.test(document.activeElement.tagName)) { e.preventDefault(); openCatalog(); }
   if (e.key === "Escape" && document.activeElement === searchInput && searchInput.value) { searchInput.value = ""; render(); }
 });
+/* ---------- Layar: menu awal (#mulai) ⇄ pilih level (#katalog) ---------- */
+const startScreen = document.getElementById("mulai");
+const levelsScreen = document.getElementById("katalog");
+function route() {
+  const inCatalog = location.hash === "#katalog";
+  startScreen.hidden = inCatalog;
+  levelsScreen.hidden = !inCatalog;
+  window.scrollTo(0, 0);
+  requestAnimationFrame(() => window.scrollTo(0, 0));
+  if (inCatalog) { render(); document.getElementById("catalog-title").focus({ preventScroll: true }); }
+}
+function openCatalog(focusSearch) {
+  if (location.hash !== "#katalog") location.hash = "katalog"; else route();
+  if (focusSearch) setTimeout(() => searchInput.focus({ preventScroll: true }), 0);
+}
+document.getElementById("backBtn").addEventListener("click", e => {
+  e.preventDefault();
+  history.pushState(null, "", location.pathname + location.search);
+  route();
+});
+window.addEventListener("hashchange", route);
+window.addEventListener("popstate", route);
+
 /* Perbarui progres saat kembali dari halaman paket. */
 window.addEventListener("pageshow", e => { if (e.persisted) render(); });
 window.addEventListener("storage", e => { if (e.key && e.key.startsWith(PROGRESS_PREFIX)) render(); });
@@ -666,6 +708,7 @@ document.getElementById("coinCount").textContent = totalQ;
 
 renderSprites();
 render();
+route();
 </script>
 </body>
 </html>
